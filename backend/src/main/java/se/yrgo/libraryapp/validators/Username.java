@@ -8,9 +8,9 @@ import java.util.regex.Pattern;
  * I.e. no funny characters or whitespace and at least four characters long.
  */
 public final class Username {
-    private static Pattern regex = Pattern.compile("[@._a-zA-Z0-]{4,}");
+    private static Pattern regex = Pattern.compile("[@._a-zA-Z0-9-]{4,}");
 
-    public Username() {}
+    private Username() {}
 
     /**
      * Validates if the given name is a valid username.

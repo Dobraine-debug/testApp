@@ -20,11 +20,13 @@ public final class RealName {
     private static final Set<String> invalidWords = new HashSet<>();
 
     static {
+        String line;
         try (InputStream is = RealName.class.getClassLoader().getResourceAsStream("bad_words.txt");
                 BufferedReader reader =
                         new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
-            while (reader.readLine() != null) {
-                invalidWords.addAll(reader.lines().collect(Collectors.toSet()));
+            while ((line = reader.readLine()) != null) {
+                invalidWords.add(line);
+                //invalidWords.addAll(reader.lines().collect(Collectors.toSet()));
             }
         } catch (IOException ex) {
             logger.error("Unable to initialize list of bad words", ex);
@@ -43,11 +45,15 @@ public final class RealName {
     public static boolean validate(String name) {
         String cleanName = Utils.cleanAndUnLeet(name);
         String[] words = cleanName.split("\\W+");
-        for (int i = 1; i < words.length; i++) {
-            if (invalidWords.contains(words[i])) {
-                return false;
+        boolean result = true;
+        for (String word : words) {
+            for(String badWord : invalidWords){
+                if(word.contains((badWord))){
+                    result = false;
+                    break;
+                }
             }
         }
-        return true;
+        return result;
     }
 }
