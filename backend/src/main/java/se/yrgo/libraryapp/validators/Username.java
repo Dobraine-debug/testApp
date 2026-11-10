@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 public final class Username {
     private static Pattern regex = Pattern.compile("[@._a-zA-Z0-]{4,}");
 
-    private Username() {}
+    public Username() {}
 
     /**
      * Validates if the given name is a valid username.
