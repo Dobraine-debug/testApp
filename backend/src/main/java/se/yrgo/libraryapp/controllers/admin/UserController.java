@@ -7,6 +7,8 @@ import io.jooby.annotations.PathParam;
 import se.yrgo.libraryapp.dao.UserDao;
 import se.yrgo.libraryapp.entities.User;
 
+import java.sql.SQLException;
+
 @Path("/admin/users")
 public class UserController {
     private UserDao userDao;
@@ -18,7 +20,7 @@ public class UserController {
 
     @GET
     @Path("/{id}")
-    public User getUser(@PathParam String id) {
+    public User getUser(@PathParam String id) throws SQLException {
         try {
             var user = userDao.get(id);
             return user.orElse(null);

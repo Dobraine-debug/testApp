@@ -59,16 +59,9 @@ public class UserDao {
     }
 
     public boolean register(String name, String realname, String password) {
-        Argon2PasswordEncoder encoder = new Argon2PasswordEncoder();
-        String passwordHash = encoder.encode(password);
-
-        // handle names like Ian O'Toole
-        realname = realname.replace("'", "\\'");
-
         try (Connection conn = ds.getConnection()) {
             conn.setAutoCommit(false);
-
-            return insertUserAndRole(name, realname, passwordHash, conn);
+            return insertUserAndRole(name, realname, password, conn);
         } catch (SQLException ex) {
             logger.error("Unable to register user " + name, ex);
             return false;
@@ -76,20 +69,23 @@ public class UserDao {
     }
 
     public boolean isNameAvailable(String name) {
-        if (name == null || name.trim().length() < 3) {
+        String query = "SELECT id FROM user WHERE user = ?";
+        if(name == null){
+            return false;
+        } else if (name.isEmpty()) {
             return false;
         }
-
-        String query = "SELECT id FROM user WHERE user = ?";
-        try (Connection conn = ds.getConnection();
-                PreparedStatement ps = conn.prepareStatement(query)) {
-            ps.setString(1, name);
-            try (ResultSet rs = ps.executeQuery()) {
-                return !rs.next();
+        else{
+            try (Connection conn = ds.getConnection();
+                 PreparedStatement ps = conn.prepareStatement(query)) {
+                ps.setString(1, name);
+                try (ResultSet rs = ps.executeQuery()) {
+                    return !rs.next();
+                }
+            } catch (SQLException ex) {
+                logger.error("Unable to lookup user name " + name, ex);
+                return false;
             }
-        } catch (SQLException ex) {
-            logger.error("Unable to lookup user name " + name, ex);
-            return false;
         }
     }
 
