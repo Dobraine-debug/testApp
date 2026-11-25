@@ -1,5 +1,9 @@
 package se.yrgo.libraryapp.validators;
 
+import net.jqwik.api.ForAll;
+import net.jqwik.api.Property;
+import net.jqwik.api.constraints.AlphaChars;
+import net.jqwik.api.constraints.CharRange;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -23,5 +27,27 @@ public class UtilsTest {
     @ValueSource(strings = {"l33t", "l01", "8455", "8455 l33t", "cool@dude"})
     void junitCleanLeetTest(String leetText){
         assertThat(Utils.cleanAndUnLeet(leetText)).matches("[a-z\\s]+");
+    }
+
+    @Property
+    boolean testLettersAndWhiteSpace(@ForAll @CharRange(from = ' ', to = '~') String text){
+        String testText = Utils.onlyLettersAndWhitespace(text);
+        if(testText.isEmpty()){
+            return true;
+        }
+        Boolean check = true;
+        for(int i=0;i < testText.length();i++){
+            char c = testText.charAt(i);
+            if(Character.isLetter(c) && Character.isLowerCase(c)){
+                check = true;
+            }
+            else if(Character.isWhitespace(c)){
+                check = true;
+            }
+            else{
+                check = false;
+            }
+        }
+        return check;
     }
 }

@@ -1,6 +1,8 @@
 package se.yrgo.libraryapp.validators;
 
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Utility functions for validation classes.
@@ -17,9 +19,10 @@ class Utils {
      * @return a string with all non-letters removed (except whitespace)
      */
     static String onlyLettersAndWhitespace(String str) {
-        return str.chars().filter(cp -> Character.isLetter(cp) || Character.isWhitespace(cp))
+        String text = str.replaceAll("[^\\p{L}\\p{N}\\p{Z}\\p{Sm}\\p{Sc}\\p{Sk}\\p{Pi}\\p{Pf}\\p{Pc}\\p{Mc}]","");
+        return text.chars().filter(cp -> Character.isLetter(cp) || Character.isWhitespace(cp))
                 .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
-                .toString().toLowerCase();
+                .toString().toLowerCase().replaceAll("[\\p{C}]", "");
     }
 
     /**
