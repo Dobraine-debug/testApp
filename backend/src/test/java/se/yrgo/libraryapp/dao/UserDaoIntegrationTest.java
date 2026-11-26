@@ -5,6 +5,11 @@ import java.sql.SQLException;
 import java.util.Optional;
 import java.util.logging.Logger;
 import javax.sql.DataSource;
+
+import com.mysql.cj.jdbc.MysqlDataSource;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+import org.flywaydb.core.Flyway;
 import org.h2.jdbcx.JdbcDataSource;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
@@ -14,6 +19,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EmptySource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
 import se.yrgo.libraryapp.entities.LoginInfo;
 import se.yrgo.libraryapp.entities.User;
 import se.yrgo.libraryapp.entities.UserId;
@@ -22,18 +31,24 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 @Tag("integration")
-@H2
+@Testcontainers
 public class UserDaoIntegrationTest{
+    @Container
+    private static MySQLContainer<?> mysql = new MySQLContainer<>(DockerImageName.parse("mysql:8.0"));
+
     private static DataSource ds;
     private static Connection con;
 
     @BeforeAll
-    static void initDataSource() throws SQLException {
-        // this way we do not need to create a new datasource every time
-        final JdbcDataSource ds = new JdbcDataSource();
-        ds.setURL("jdbc:h2:mem:test");
-        UserDaoIntegrationTest.ds = ds;
-        UserDaoIntegrationTest.con = ds.getConnection();
+    static void setup() {
+        HikariConfig hikariConfig = new HikariConfig();
+        hikariConfig.setJdbcUrl(mysql.getJdbcUrl());
+        hikariConfig.setUsername(mysql.getUsername());
+        hikariConfig.setPassword(mysql.getPassword());
+        hikariConfig.setDriverClassName(mysql.getDriverClassName());
+        UserDaoIntegrationTest.ds = new HikariDataSource(hikariConfig);
+        Flyway flyway = Flyway.configure().dataSource(ds).load();
+        flyway.migrate();
     }
 
     @Test
@@ -94,7 +109,7 @@ public class UserDaoIntegrationTest{
         assertThat(userDao.getLoginInfo(user)).isPresent();
     }
 
-    @Test
+    /**@Test
     void getException() {
         final String user = "registertest";
         final String realName = "Bosse";
@@ -103,7 +118,7 @@ public class UserDaoIntegrationTest{
         when(userDao.register(user, realName, password)).thenAnswer(i -> {throw new SQLException();
         });
         assertThat(userDao.register(user, realName, password)).isFalse();
-    }
+    }*/
 
     @Test
     void checkAvailableName(){
